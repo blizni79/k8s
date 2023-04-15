@@ -39,6 +39,32 @@ sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
 
 minikube start
+kubectl config view
+export KUBECONFIG=~/.kube/config:~/.kube/kubconfig2
+
+
+#################
+kubectl config view # Show Merged kubeconfig settings.
+
+# use multiple kubeconfig files at the same time and view merged config
+export KUBECONFIG=~/.kube/config:~/.kube/microk8s.config
+
+
+
+kubectl config view
+
+# get the password for the e2e user
+kubectl config view -o jsonpath='{.users[?(@.name == "e2e")].user.password}'
+
+kubectl config view -o jsonpath='{.users[].name}'    # display the first user
+kubectl config view -o jsonpath='{.users[*].name}'   # get a list of users
+kubectl config get-contexts                          # display list of contexts
+kubectl config current-context                       # display the current-context
+kubectl config use-context microk8s           # set the default context to my-cluster-name
+
+kubectl config set-cluster docker-desktop           # set a cluster entry in the kubeconfig
+
+################
 
 
 kubectl version --client
@@ -55,3 +81,35 @@ minikube dashboard -url
 kubectl get po -A
 minikube kubectl -- get po -A
 alias kubectl="minikube kubectl --"
+
+
+
+microk8s kubectl create deployment microbot --image=dontrebootme/microbot:v1
+microk8s kubectl scale deployment microbot --replicas=2
+
+microk8s kubectl expose deployment microbot --type=NodePort --port=80 --name=microbot-service
+
+
+kubectl get - list resources
+kubectl describe - show detailed information about a resource
+kubectl logs - print the logs from a container in a pod
+kubectl exec - execute a command on a container in a pod
+
+
+
+Uwagi dotyczące dużych klastrów
+
+Klaster to zbiórwęzły(maszyny fizyczne lub wirtualne) z uruchomionymi agentami Kubernetes, zarządzanymi przez sterowanie samolotem. Kubernetes v1.27 obsługuje klastry do 5000 węzłów. Mówiąc dokładniej, Kubernetes został zaprojektowany tak, aby uwzględniał konfiguracje spełniające wszystkie poniższe kryteria:
+
+Nie więcej niż 110 podów na węzeł
+Nie więcej niż 5000 węzłów
+Nie więcej niż 150 000 strąków łącznie
+Nie więcej niż 300 000 kontenerów ogółem
+
+  containers:
+  - name: fluentd-cloud-logging
+    image: fluent/fluentd-kubernetes-daemonset:v1
+    resources:
+      limits:
+        cpu: 100m
+        memory: 200Mi
